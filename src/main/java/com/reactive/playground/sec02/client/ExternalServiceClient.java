@@ -1,2 +1,15 @@
-package com.reactive.playground.sec02.client;public class ExternalServiceClient {
+package com.reactive.playground.sec02.client;
+
+import com.reactive.playground.common.AbstractHttpClient;
+import reactor.core.publisher.Mono;
+
+public class ExternalServiceClient extends AbstractHttpClient {
+
+    public Mono<String> getProductName(int productId) {
+        return this.httpClient.get()
+                .uri("/demo01/product/" + productId)
+                .responseContent()
+                .asString()
+                .next();
+    }
 }

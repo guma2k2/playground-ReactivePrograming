@@ -18,4 +18,13 @@ public class Util   {
     public static Faker faker () {
         return faker;
     }
+
+
+    public static void sleepSeconds(int seconds) {
+        try {
+            Thread.sleep(seconds*1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
