@@ -7,15 +7,15 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
-public class Lec03FluxFromIterable {
-    private static final Logger log = LoggerFactory.getLogger(Lec03FluxFromIterable.class);
+public class Lec04FluxFromStream {
+    private static final Logger log = LoggerFactory.getLogger(Lec04FluxFromStream.class);
 
     public static void main(String[] args) {
-        var list = List.of("a", "b", "c");
-        Flux.fromIterable(list).subscribe(Util.subscriber());
 
-        Integer[] arr = {1, 2, 3, 4};
-        Flux.fromArray(arr).subscribe(Util.subscriber());
+        var list = List.of(1, 2, 3, 4);
+        var stream = list.stream();
+        Flux.fromStream(stream)
+                .subscribe(Util.subscriber());
     }
 
 }

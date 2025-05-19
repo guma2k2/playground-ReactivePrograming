@@ -7,14 +7,13 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
-public class Lec04FluxFromStream {
-    private static final Logger log = LoggerFactory.getLogger(Lec04FluxFromStream.class);
+public class Lec05FluxRange {
+    private static final Logger log = LoggerFactory.getLogger(Lec05FluxRange.class);
 
     public static void main(String[] args) {
-
-        var list = List.of(1, 2, 3, 4);
-        var stream = list.stream();
-        Flux.fromStream(stream)
+        Flux.range(1, 10)
+                .subscribe(Util.subscriber());
+        Flux.range(1, 10).map(integer -> Util.faker().name().firstName())
                 .subscribe(Util.subscriber());
     }
 

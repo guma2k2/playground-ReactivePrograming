@@ -1,15 +1,24 @@
-package com.reactive.playground.sec02.client;
+package com.reactive.playground.sec03.client;
 
 import com.reactive.playground.common.AbstractHttpClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class ExternalServiceClient extends AbstractHttpClient {
 
-    public Mono<String> getProductName(int productId) {
+    public Flux<String> getNames() {
         return this.httpClient.get()
-                .uri("/demo01/product/" + productId)
+                .uri("/demo02/name/stream")
+                .responseContent()
+                .asString();
+    }
+
+
+    public Flux<Integer> getPriceChanges() {
+        return this.httpClient.get()
+                .uri("/demo02/stock/stream")
                 .responseContent()
                 .asString()
-                .next();
+                .map(Integer::parseInt);
     }
 }
