@@ -1,24 +1,31 @@
-package com.reactive.playground.sec03.client;
+package com.reactive.playground.sec05.client;
 
 import com.reactive.playground.common.AbstractHttpClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 public class ExternalServiceClient extends AbstractHttpClient {
 
-    public Flux<String> getNames() {
-        return this.httpClient.get()
-                .uri("/demo02/name/stream")
-                .responseContent()
-                .asString();
+
+    public Mono<String> getProductName(int productId) {
+        var defaultPath = "/demo03/product/" + productId;
+        var timeoutPath =  "/demo03/timeout-fallback/product/" + productId;
+        var emptyPath =  "/demo03/empty-fallback/product/" + productId;
+
+        return getProductName(defaultPath)
+                .timeout(Duration.ofSeconds(2) , getProductName(timeoutPath))
+                .switchIfEmpty(getProductName(emptyPath));
     }
 
 
-    public Flux<Integer> getPriceChanges() {
+    public Mono<String> getProductName(String path) {
         return this.httpClient.get()
-                .uri("/demo02/stock/stream")
+                .uri(path)
                 .responseContent()
                 .asString()
-                .map(Integer::parseInt);
+                .next();
     }
+
 }

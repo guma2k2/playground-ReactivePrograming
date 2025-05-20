@@ -3,25 +3,33 @@
 
 package com.reactive.playground.sec05;
 
-import com.github.javafaker.Faker;
 import com.reactive.playground.common.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class Lec08SwtichfEmpty {
-    private static final Logger log = LoggerFactory.getLogger(Lec08SwtichfEmpty.class);
+import java.time.Duration;
+
+public class Lec09Timeout {
+    private static final Logger log = LoggerFactory.getLogger(Lec09Timeout.class);
 
     public static void main(String[] args) {
-        Flux.range(1, 10)
-                .filter(i -> i > 11)
-                .switchIfEmpty(fallback())
+        getProductName()
+                .timeout(Duration.ofSeconds(1),fallback())
                 .subscribe(Util.subscriber());
+        Util.sleepSeconds(5);
     }
 
-    private static Flux<Integer> fallback() {
-        return Flux.range(100, 3);
+
+    private static Mono<String> getProductName () {
+        return Mono.fromSupplier(() -> Util.faker().commerce().productName()).delayElement(Duration.ofSeconds(1));
+    }
+
+    private static Mono<String> fallback () {
+        return Mono
+                .fromSupplier(() -> "fallback" +  Util.faker().commerce().productName())
+                .delayElement(Duration.ofSeconds(1));
     }
 
 

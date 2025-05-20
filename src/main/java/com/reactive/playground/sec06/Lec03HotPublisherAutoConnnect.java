@@ -8,19 +8,23 @@ import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 
-public class Lec02HotPublisher {
-    private static final Logger log = LoggerFactory.getLogger(Lec02HotPublisher.class);
+public class Lec03HotPublisherAutoConnnect {
+    private static final Logger log = LoggerFactory.getLogger(Lec03HotPublisherAutoConnnect.class);
 
     public static void main(String[] args) {
-        var movieFlux = movieStream();
+        var movieFlux = movieStream().publish().autoConnect();
         Util.sleepSeconds(2);
 
-        movieFlux.subscribe(Util.subscriber("subs1"));
+        movieFlux
+                .take(4)
+                .subscribe(Util.subscriber("subs1"));
 
         Util.sleepSeconds(3);
 
 
-        movieFlux.subscribe(Util.subscriber("subs2"));
+        movieFlux
+                .take(3)
+                .subscribe(Util.subscriber("subs2"));
 
 
         Util.sleepSeconds(15);

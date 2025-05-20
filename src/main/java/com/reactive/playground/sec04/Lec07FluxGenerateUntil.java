@@ -8,15 +8,31 @@ import reactor.core.publisher.Flux;
 
 // arraylist is not thread safe
 // flux sink is thread safe
-public class Lec06FluxGenerate {
-    private static final Logger log = LoggerFactory.getLogger(Lec06FluxGenerate.class);
+public class Lec07FluxGenerateUntil {
+    private static final Logger log = LoggerFactory.getLogger(Lec07FluxGenerateUntil.class);
 
     public static void main(String[] args) {
+      demo2();
+    }
+
+    private static void demo1() {
         Flux.generate(synchronousSink -> {
-            synchronousSink.next(1);
-            synchronousSink.next(2);
-            synchronousSink.complete();
+            var country = Util.faker().country().name();
+            synchronousSink.next(country);
+            if (country.equalsIgnoreCase("canada")) {
+                synchronousSink.complete();
+            }
         }).subscribe(Util.subscriber());
+    }
+
+    private static void demo2() {
+        Flux.<String>generate(synchronousSink -> {
+            var country = Util.faker().country().name();
+            synchronousSink.next(country);
+
+        })
+                .takeUntil(c -> c.equalsIgnoreCase("canada"))
+                .subscribe(Util.subscriber());
     }
 
 }
