@@ -1,51 +1,52 @@
 
 
 
+
+
 package com.reactive.playground.sec08;
 
 import com.reactive.playground.common.Util;
+import com.reactive.playground.sec08.client.ExternalServiceClient;
+import com.reactive.playground.sec08.client.ServerError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class
-Lec02Retry {
-    private static final Logger log = LoggerFactory.getLogger(Lec02Retry.class);
+Lec03ExternalServiceDemo {
+    private static final Logger log = LoggerFactory.getLogger(Lec03ExternalServiceDemo.class);
 
 
     public static void main(String[] args) {
-
-
-        Util.sleepSeconds(10);
+        repeat();
+        Util.sleepSeconds(60);
     }
 
-    private static void demo1 () {
-        getCountryName()
-                .retry(1)
+
+    private static void repeat () {
+        var client = new ExternalServiceClient();
+
+        client.getCountry()
+                .repeat()
+                .takeUntil(c -> c.equalsIgnoreCase("canada"))
                 .subscribe(Util.subscriber());
     }
 
 
-    private static void demo2 () {
-        getCountryName()
-                .retryWhen(Retry.fixedDelay(2, Duration.ofSeconds(1))
-                        .doBeforeRetry(rs -> log.info("retrying")))
+    private static void retry () {
+        var client = new ExternalServiceClient();
+
+        client.getProductName(1)
+                .retryWhen(retryOnServerError())
                 .subscribe(Util.subscriber());
     }
 
-    private static Mono<String> getCountryName () {
-        AtomicInteger atomicInteger = new AtomicInteger(0);
-        return Mono.fromSupplier(() -> {
-            if (atomicInteger.incrementAndGet() < 3) {
-                throw new RuntimeException("oops");
-            }
-            return Util.faker().country().name();
-        })
-                .doOnError(err -> log.info("ERR: {}", err.getMessage()))
-                .doOnSubscribe(s -> log.info("subscribing"));
+    private static Retry retryOnServerError() {
+        return Retry
+                .fixedDelay(20, Duration.ofSeconds(1))
+                .filter(ex -> ServerError.class.equals(ex.getClass()))
+                .doBeforeRetry(rs -> log.info("retrying {}", rs.failure().getMessage()));
     }
 }

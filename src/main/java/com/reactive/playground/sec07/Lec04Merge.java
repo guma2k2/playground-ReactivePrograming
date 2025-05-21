@@ -7,27 +7,41 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
-import java.util.List;
 
-public class Lec03ConcatWith {
-    private static final Logger log = LoggerFactory.getLogger(Lec03ConcatWith.class);
+public class Lec04Merge {
+    private static final Logger log = LoggerFactory.getLogger(Lec04Merge.class);
 
     public static void main(String[] args) {
 
-    }
-
-    private static void demo1() {
-        producer1()
-                .concatWithValues(-1, 0)
+        Flux.merge(producer1(), producer2(), producer3())
+                .take(2)
                 .subscribe(Util.subscriber());
 
-        Util.sleepSeconds(3);
+        producer1().mergeWith(producer2()).mergeWith(producer3())
+                        .take(2)
+                                .subscribe(Util.subscriber());
 
+
+        Util.sleepSeconds(3);
     }
 
     private static Flux<Integer> producer1() {
         return Flux.just(1, 2, 3)
-                .doOnSubscribe(subscription -> log.info("subscribing to producer1"))
+                .transform(Util.fluxLogger("producer3"))
+                .delayElements(Duration.ofMillis(10));
+    }
+
+
+    private static Flux<Integer> producer2() {
+        return Flux.just(11, 12, 13)
+                .transform(Util.fluxLogger("producer3"))
+                .delayElements(Duration.ofMillis(10));
+    }
+
+
+    private static Flux<Integer> producer3() {
+        return Flux.just(21, 22, 23)
+                .transform(Util.fluxLogger("producer3"))
                 .delayElements(Duration.ofMillis(10));
     }
 

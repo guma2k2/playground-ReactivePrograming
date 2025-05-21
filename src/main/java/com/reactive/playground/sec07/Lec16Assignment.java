@@ -1,9 +1,10 @@
 
 
+
 package com.reactive.playground.sec07;
 
 import com.reactive.playground.common.Util;
-import com.reactive.playground.sec07.client.ExternalServiceClient;
+import com.reactive.playground.sec07.applications.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -12,29 +13,27 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.List;
 
-public class Lec12Then {
-    private static final Logger log = LoggerFactory.getLogger(Lec12Then.class);
+public class Lec16Assignment {
+    private static final Logger log = LoggerFactory.getLogger(Lec16Assignment.class);
 
+    record UserInformation(Integer userId, String username, Integer balance, List<Order> orders){}
 
     public static void main(String[] args) {
-        var records = List.of("a", "b", "c");
-        saveRecord(records)
-                .then(sendNotification(records))
+
+
+        UserService.getAllUsers()
+                .flatMap(user -> getUserInformation(user))
                 .subscribe(Util.subscriber());
 
-        Util.sleepSeconds(5);
+        Util.sleepSeconds(2);
     }
 
-
-    private static Flux<String> saveRecord(List<String> records)  {
-        return Flux.fromIterable(records)
-                .map(r -> "saved " + r)
-                .delayElements(Duration.ofMillis(500));
-
-    }
-
-    private static Mono<Void> sendNotification(List<String> records) {
-        return Mono.fromRunnable(() -> log.info("all these {} records saved successfully", records));
+    private static Mono<UserInformation> getUserInformation(User user) {
+        return Mono.zip(
+                PaymentService.getUserBalance(user.id()),
+                OrderService.getUserOrders(user.id()).collectList()
+        )
+                .map(t -> new UserInformation(user.id(), user.name(), t.getT1(), t.getT2()));
     }
 
 }

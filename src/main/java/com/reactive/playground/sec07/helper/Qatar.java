@@ -5,13 +5,13 @@ import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 
-public class Emirates {
-    private static final String AIRLINE = "Emirates";
+public class Qatar {
+    private static final String AIRLINE = "Qatar";
 
     public static Flux<Flight> getFlights() {
-        return Flux.range(1, Util.faker().random().nextInt(2, 10))
-                .delayElements(Duration.ofMillis(Util.faker().random().nextInt(200, 1000)))
-                .map(i -> new Flight(AIRLINE, Util.faker().random().nextInt(300, 1000)))
+        return Flux.range(1, Util.faker().random().nextInt(3, 5))
+                .delayElements(Duration.ofMillis(Util.faker().random().nextInt(300, 800)))
+                .map(i -> new Flight(AIRLINE, Util.faker().random().nextInt(400,900)))
                 .transform(Util.fluxLogger(AIRLINE));
     }
 }

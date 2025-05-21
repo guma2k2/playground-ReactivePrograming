@@ -1,48 +1,45 @@
-package com.reactive.playground.sec06.client;
+package com.reactive.playground.sec07.client;
 
 import com.reactive.playground.common.AbstractHttpClient;
-import com.reactive.playground.sec05.Lec02HandleUntilAssignment;
 import com.reactive.playground.sec06.assignment.Order;
+import com.reactive.playground.sec07.assignment.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.Objects;
 
 public class ExternalServiceClient extends AbstractHttpClient {
 
     private static final Logger log = LoggerFactory.getLogger(ExternalServiceClient.class);
 
-
-    private Flux<Order> orderFlux;
-
-    public Flux<Order> orderStream() {
-        if (Objects.isNull(orderFlux)) {
-            this.orderFlux = getOrderStream();
-        }
-        return this.orderFlux;
+    public Mono<Product> getProduct(int productId) {
+        return Mono.zip(getProductName(productId), getReview(productId), getPrice(productId))
+                .map(t -> new Product(t.getT1(), t.getT2(), t.getT3()));
     }
 
-    public Flux<Order> getOrderStream() {
+
+    private Mono<String> getProductName(int productId) {
+        return get("/demo05/product/" + productId);
+    }
+
+
+    private Mono<String> getReview(int productId) {
+        return get("/demo05/review/" + productId);
+    }
+
+    private Mono<String> getPrice(int productId) {
+        return get("/demo05/price/" + productId);
+    }
+
+    private Mono<String> get(String path) {
         return this.httpClient.get()
-                .uri("/demo04/orders/stream")
+                .uri(path)
                 .responseContent()
                 .asString()
-                .map(this::parse)
-                .doOnNext(order -> log.info("{}", order))
-                .publish()
-                .refCount(2);
+                .next();
     }
 
 
-    private Order parse (String message) {
-        var arr = message.split(":");
-        return new Order(
-                arr[1],
-                Integer.parseInt(arr[2]),
-                Integer.parseInt(arr[3])
-        );
-    }
 }

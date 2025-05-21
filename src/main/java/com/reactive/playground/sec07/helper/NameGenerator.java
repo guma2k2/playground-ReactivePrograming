@@ -1,20 +1,31 @@
-package com.reactive.playground.sec04.helper;
+package com.reactive.playground.sec07.helper;
 
 import com.reactive.playground.common.Util;
-import reactor.core.publisher.FluxSink;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
 
-public class NameGenerator implements Consumer<FluxSink<String>> {
 
-    private FluxSink<String> sink;
-    @Override
-    public void accept(FluxSink<String> stringFluxSink) {
-        this.sink = stringFluxSink;
-    }
+public class NameGenerator {
 
-    public void generate() {
-        this.sink.next(Util.faker().name().firstName());
+    private static final Logger log = LoggerFactory.getLogger(NameGenerator.class);
+
+    private final List<String> redis = new ArrayList<>();
+
+
+
+    public Flux<String> generateNames() {
+        return Flux.generate(sink -> {
+            log.info("generating name");
+            Util.sleepSeconds(1);
+
+            var name = Util.faker().name().firstName();
+            redis.add(name);
+            sink.next(name);
+        }).startWith(redis).cast(String.class);
     }
 
 

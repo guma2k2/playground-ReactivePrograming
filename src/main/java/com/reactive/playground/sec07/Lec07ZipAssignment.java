@@ -2,44 +2,26 @@
 package com.reactive.playground.sec07;
 
 import com.reactive.playground.common.Util;
+import com.reactive.playground.sec07.client.ExternalServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 
-public class Lec06Zip {
-    private static final Logger log = LoggerFactory.getLogger(Lec06Zip.class);
+public class Lec07ZipAssignment {
+    private static final Logger log = LoggerFactory.getLogger(Lec07ZipAssignment.class);
 
 
-    record Car(String body, String engine, String tires){}
     public static void main(String[] args) {
+        var client = new ExternalServiceClient();
 
-        Flux.zip(getBody(), getEngine(), getTires())
-                .map(t -> new Car(t.getT1(), t.getT2(), t.getT3()))
-                        .subscribe(Util.subscriber());
+        for (int i = 0; i < 10; i++) {
+            client.getProduct(i).subscribe(Util.subscriber());
+        }
 
-        Util.sleepSeconds(5);
+        Util.sleepSeconds(2);
     }
-
-    private static Flux<String> getBody() {
-        return Flux.range(1, 5)
-                .map(i -> "body-" + i)
-                .delayElements(Duration.ofMillis(100));
-    }
-
-    private static Flux<String> getEngine() {
-        return Flux.range(1, 3)
-                .map(i -> "engine-" + i)
-                .delayElements(Duration.ofMillis(100));
-    }
-
-    private static Flux<String> getTires() {
-        return Flux.range(1, 10)
-                .map(i -> "tires-" + i)
-                .delayElements(Duration.ofMillis(100));
-    }
-
 
 
 }

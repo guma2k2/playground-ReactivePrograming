@@ -1,9 +1,8 @@
 
 
-package com.reactive.playground.sec07;
+package com.reactive.playground.sec08;
 
 import com.reactive.playground.common.Util;
-import com.reactive.playground.sec07.client.ExternalServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -11,31 +10,49 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class
-Lec12Then {
-    private static final Logger log = LoggerFactory.getLogger(Lec12Then.class);
+Lec01Repeat {
+    private static final Logger log = LoggerFactory.getLogger(Lec01Repeat.class);
 
 
     public static void main(String[] args) {
-        var records = List.of("a", "b", "c");
-        saveRecord(records)
-                .then(sendNotification(records))
+
+    }
+
+    private static void demo1 () {
+        getCountryName()
+                .repeat(3)
                 .subscribe(Util.subscriber());
+    }
 
-        Util.sleepSeconds(5);
+    private static void demo2 () {
+        getCountryName()
+                .repeat()
+                .takeUntil(c -> c.equalsIgnoreCase("canada"))
+                .subscribe(Util.subscriber());
     }
 
 
-    private static Flux<String> saveRecord(List<String> records)  {
-        return Flux.fromIterable(records)
-                .map(r -> "saved " + r)
-                .delayElements(Duration.ofMillis(500));
+    private static void demo3 () {
+        AtomicInteger atomicInteger = new AtomicInteger(0);
 
+        getCountryName()
+                .repeat(() -> atomicInteger.getAndIncrement() < 3)
+                .subscribe(Util.subscriber());
     }
 
-    private static Mono<Void> sendNotification(List<String> records) {
-        return Mono.fromRunnable(() -> log.info("all these {} records saved successfully", records));
+    private static void demo4 () {
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+
+        getCountryName()
+                .repeatWhen(flux -> flux.delayElements(Duration.ofSeconds(2)).take(2))
+                .subscribe(Util.subscriber());
     }
 
+
+    private static Mono<String> getCountryName () {
+        return Mono.fromSupplier(() -> Util.faker().country().name());
+    }
 }
